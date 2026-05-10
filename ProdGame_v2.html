@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Producer Challenge — ITS Rossellini</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1a6bbf;
+    --blue-dark: #0d3d6e;
+    --blue-mid: #1e5fa0;
+    --yellow: #f5c518;
+    --white: #f0ece4;
+    --grey: #2a2a2a;
+    --card-bg: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.12);
+    --green: #2ecc71;
+    --orange: #e67e22;
+    --red: #e74c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--blue-dark);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* HUD */
+  #hud {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: rgba(13, 61, 110, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(245,197,24,0.3);
+  }
+
+  #hud-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  #hud-stage {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Progress bar */
+  #progress-bar-wrap {
+    position: fixed;
+    top: 56px; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    z-index: 500;
+  }
+  #progress-bar {
+    height: 100%;
+    background: var(--yellow);
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+    box-shadow: 0 0 8px var(--yellow);
+  }
+
+  /* Main container */
+  #app {
+    padding: 100px 24px 60px;
+    max-width: 960px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* Stage header */
+  .stage-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+
+  .stage-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 0.92;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .stage-sub {
+    font-size: 0.95rem;
+    font-weight: 300;
+    opacity: 0.7;
+    margin-bottom: 48px;
+    max-width: 540px;
+    line-height: 1.5;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(245,197,24,0.06) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover {
+    border-color: rgba(245,197,24,0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .card-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .card-desc {
+    font-size: 0.82rem;
+    font-weight: 300;
+    opacity: 0.65;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .card-cost {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--yellow);
+    letter-spacing: 0.05em;
+  }
+
+  /* Cast tier cards */
+  .cast-names {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 18px;
+  }
+
+  .cast-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    opacity: 0.85;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .cast-name:last-child { border-bottom: none; }
+
+  .tier-badge {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+
+  .tier-star { background: rgba(245,197,24,0.2); color: var(--yellow); border: 1px solid rgba(245,197,24,0.4); }
+  .tier-talent { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+  .tier-indie { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+
+  /* Back button */
+  .back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .back-btn:hover {
+    border-color: rgba(255,255,255,0.5);
+    color: var(--white);
+  }
+
+  /* Intro screen */
+  #intro-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 160px);
+    padding: 20px 0;
+  }
+
+  .intro-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 20px;
+  }
+
+  .intro-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3.5rem, 9vw, 7rem);
+    line-height: 0.88;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .intro-title span {
+    color: var(--yellow);
+    display: block;
+  }
+
+  .intro-budget {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--yellow);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  .intro-rules {
+    margin: 28px 0 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 480px;
+  }
+
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    opacity: 0.8;
+  }
+
+  .rule-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .dot-green { background: var(--green); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-red { background: var(--red); }
+
+  .start-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--yellow);
+    color: #0d1f35;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 16px 36px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+
+  .start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245,197,24,0.4);
+  }
+
+  /* End screens */
+  .end-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 160px);
+    padding: 20px 0;
+  }
+
+  .end-outcome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 0.9;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .end-outcome.cannes { color: var(--yellow); }
+  .end-outcome.flop { color: var(--orange); }
+  .end-outcome.bankrupt { color: var(--red); }
+
+  .end-subtitle {
+    font-size: 1.05rem;
+    font-weight: 300;
+    opacity: 0.75;
+    max-width: 480px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .recap-table {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 480px;
+    margin-bottom: 36px;
+  }
+
+  .recap-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.88rem;
+  }
+
+  .recap-row:last-child { border-bottom: none; }
+  .recap-row.total {
+    background: rgba(245,197,24,0.08);
+    font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+  }
+
+  .recap-label { opacity: 0.65; }
+  .recap-value { font-weight: 600; }
+
+  .restart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.3);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+
+  .restart-btn:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  /* Film slate decoration */
+  .slate-line {
+    width: 48px;
+    height: 4px;
+    background: var(--yellow);
+    margin-bottom: 24px;
+    border-radius: 2px;
+  }
+
+  /* Animate in */
+  .fade-in {
+    animation: fadeInUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+
+  /* Divider */
+  .section-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 32px 0;
+  }
+
+  .cast-section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  /* VFX Stage specific styles */
+  .vfx-notice {
+    background: rgba(245,197,24,0.08);
+    border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 32px;
+    max-width: 480px;
+  }
+
+  .vfx-notice-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .vfx-notice-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+    color: var(--yellow);
+  }
+
+  .vfx-notice-text {
+    font-size: 0.9rem;
+    font-weight: 300;
+    opacity: 0.8;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .vfx-notice-cost {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--yellow);
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+
+  .vfx-confirm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--yellow);
+    color: #0d1f35;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .vfx-confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245,197,24,0.4);
+  }
+</style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-title">🎬 Producer Challenge</div>
+  <div id="hud-stage">—</div>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<!-- App root -->
+<div id="app"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const BUDGET = 3_000_000;
+const FLOP_THRESHOLD = 1_800_000;   // spesa minima per non essere un flop
+const TOTAL_STAGES = 7;
+
+const STAGES = [
+  {
+    id: 'genere',
+    label: 'Fase 1',
+    title: 'Il Genere',
+    sub: 'La prima decisione definisce tutto: tono, budget, aspettative.',
+    type: 'choice',
+    options: [
+      { id: 'indie', icon: '🎭', name: 'Drama Indie', desc: 'Una storia intima, pochi personaggi, dialoghi profondi.', cost: 150_000 },
+      { id: 'horror', icon: '👻', name: 'Horror / Thriller', desc: 'Tensione, trucco speciale e location inquietanti.', cost: 300_000 },
+      { id: 'scifi', icon: '🚀', name: 'Sci-Fi Action', desc: 'Effetti visivi complessi e scenografie futuristiche.', cost: 600_000 },
+    ]
+  },
+  {
+    id: 'regia',
+    label: 'Fase 2',
+    title: 'La Regia',
+    sub: 'Chi guida il set determina qualità e tempi di lavorazione.',
+    type: 'choice',
+    options: [
+      { id: 'maestro', icon: '🏆', name: 'Il Maestro', desc: 'Premiato, esperto, garantisce qualità ma è molto costoso e richiede tempi lunghi.', cost: 600_000 },
+      { id: 'esordiente', icon: '🎓', name: "L'Esordiente", desc: "Giovane talento dell'ITS. Creativo, affamato, ma con meno esperienza nella gestione dei tempi.", cost: 100_000 },
+    ]
+  },
+  {
+    id: 'cast_f',
+    label: 'Fase 3A',
+    title: 'Il Cast Femminile',
+    sub: 'Scegli il pacchetto di 3 attrici per il tuo film.',
+    type: 'cast',
+    options: [
+      { id: 'star_f', badge: 'tier-star', badgeLabel: 'Star', names: ['Zendaya', 'Florence Pugh', 'Sydney Sweeney'], cost: 1_200_000 },
+      { id: 'talent_f', badge: 'tier-talent', badgeLabel: 'Talents', names: ['Victoria Pedretti', 'Millie Bobby Brown', 'Cailee Spaeny'], cost: 600_000 },
+      { id: 'indie_f', badge: 'tier-indie', badgeLabel: 'Indie', names: ['Karen Gillian', 'Simone Ashley', 'Kaitlyn Dever'], cost: 300_000 },
+    ]
+  },
+  {
+    id: 'cast_m',
+    label: 'Fase 3B',
+    title: 'Il Cast Maschile',
+    sub: 'Scegli il pacchetto di 3 attori per il tuo film.',
+    type: 'cast',
+    options: [
+      { id: 'star_m', badge: 'tier-star', badgeLabel: 'Star', names: ['Timothée Chalamet', 'Tom Holland', 'Jacob Elordi'], cost: 1_200_000 },
+      { id: 'talent_m', badge: 'tier-talent', badgeLabel: 'Talents', names: ['Austin Butler', 'Jeremy Allen White', 'Finn Wolfhard'], cost: 600_000 },
+      { id: 'indie_m', badge: 'tier-indie', badgeLabel: 'Indie', names: ['Dominic Fike', 'Noah Centineo', 'Caleb McLaughlin'], cost: 300_000 },
+    ]
+  },
+  {
+    id: 'location',
+    label: 'Fase 4',
+    title: 'La Location',
+    sub: 'Dove girate? Ogni scelta ha implicazioni tecniche e logistiche.',
+    type: 'choice',
+    options: [
+      { id: 'roma', icon: '🏛️', name: 'Roma (Esterni)', desc: 'Permessi, blocchi stradali, meteo incerto.', cost: 100_000 },
+      { id: 'studio', icon: '🎬', name: 'Studio / Teatro di posa', desc: 'Controllo totale, scenografie da costruire.', cost: 250_000 },
+      { id: 'virtual', icon: '🥽', name: 'Virtual Production', desc: 'LED Wall, tecnologia Unreal Engine.', cost: 500_000 },
+    ]
+  },
+  {
+    id: 'vfx',
+    label: 'Fase 5',
+    title: 'VFX & Montaggio',
+    sub: 'La post-produzione è un costo inevitabile. La cifra dipende dal genere scelto.',
+    type: 'vfx',
+    // No options here — it's an auto-deduct notice stage
+  },
+  {
+    id: 'distribuzione',
+    label: 'Fase 6',
+    title: 'La Distribuzione',
+    sub: 'Hai finito il film. Come lo porti al pubblico?',
+    type: 'choice',
+    options: [
+      { id: 'festival', icon: '🏅', name: 'Premier e Festival', desc: 'Cannes, Venezia, Berlino. Grande prestigio, costi di PR altissimi.', cost: 100_000 },
+      { id: 'viral', icon: '📱', name: 'Social & Web Viral', desc: 'Campagna aggressiva su TikTok e Instagram per giovani.', cost: 40_000 },
+    ]
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let state = {
+  screen: 'intro',       // 'intro' | 'stage' | 'end'
+  stageIndex: 0,
+  budget: BUDGET,
+  choices: {},
+  history: [],           // undo stack: array of snapshots
+};
+
+function snapshot() {
+  return JSON.parse(JSON.stringify(state));
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function formatEuro(n) {
+  return n.toLocaleString('it-IT') + ' €';
+}
+
+function getVfxCost() {
+  return state.choices.genere === 'scifi' ? 600_000 : 100_000;
+}
+
+function getSpent() {
+  return BUDGET - state.budget;
+}
+
+function getEndResult() {
+  const spent = getSpent();
+  if (state.budget < 0) return 'bankrupt';
+  if (spent < FLOP_THRESHOLD) return 'flop';
+  return 'cannes';
+}
+
+function updateHUD() {
+  const stageEl = document.getElementById('hud-stage');
+
+  // Stage dots
+  if (state.screen === 'stage') {
+    const dots = Array.from({length: TOTAL_STAGES}, (_, i) => {
+      if (i < state.stageIndex) return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin:0 3px;"></span>`;
+      if (i === state.stageIndex) return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin:0 3px;box-shadow:0 0 6px var(--yellow);"></span>`;
+      return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);margin:0 3px;"></span>`;
+    }).join('');
+    stageEl.innerHTML = dots;
+  } else {
+    stageEl.textContent = '';
+  }
+
+  // Progress bar
+  const bar = document.getElementById('progress-bar');
+  if (state.screen === 'stage') {
+    bar.style.width = ((state.stageIndex) / TOTAL_STAGES * 100) + '%';
+  } else if (state.screen === 'end') {
+    bar.style.width = '100%';
+  } else {
+    bar.style.width = '0%';
+  }
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+
+function startGame() {
+  state.history = [];
+  state.stageIndex = 0;
+  state.budget = BUDGET;
+  state.choices = {};
+  state.screen = 'stage';
+  render();
+}
+
+function makeChoice(optionId, cost) {
+  // Push snapshot before modifying
+  state.history.push(snapshot());
+
+  const stage = STAGES[state.stageIndex];
+  state.choices[stage.id] = optionId;
+  state.budget -= cost;
+
+  // After last stage, go to end
+  if (state.stageIndex === STAGES.length - 1) {
+    state.screen = 'end';
+  } else {
+    state.stageIndex += 1;
+  }
+
+  render();
+}
+
+function confirmVfx() {
+  // Push snapshot before modifying
+  state.history.push(snapshot());
+
+  const vfxCost = getVfxCost();
+  state.choices.vfx = vfxCost;
+  state.budget -= vfxCost;
+
+  // After VFX stage, go to distribution
+  if (state.stageIndex === STAGES.length - 1) {
+    state.screen = 'end';
+  } else {
+    state.stageIndex += 1;
+  }
+
+  render();
+}
+
+function goBack() {
+  if (state.history.length === 0) return;
+  state = state.history.pop();
+  render();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+
+function render() {
+  updateHUD();
+  const app = document.getElementById('app');
+
+  if (state.screen === 'intro') {
+    renderIntro(app);
+  } else if (state.screen === 'stage') {
+    renderStage(app);
+  } else if (state.screen === 'end') {
+    renderEnd(app);
+  }
+}
+
+function renderIntro(app) {
+  app.innerHTML = `
+    <div id="intro-screen">
+      <div class="intro-eyebrow">ITS Academy Roberto Rossellini · Open Day</div>
+      <div class="slate-line"></div>
+      <div class="intro-title">
+        Producer<br><span>Challenge</span>
+      </div>
+      <div class="intro-budget">3.000.000 €</div>
+      <p style="font-size:0.95rem;font-weight:300;opacity:0.65;max-width:480px;line-height:1.6;">
+        Il tuo budget per produrre un film. Ogni scelta ha un costo.
+        Gestisci le risorse, assembla il cast, scegli dove girare.
+        Ce la farai ad arrivare a Cannes?
+      </p>
+      <div class="intro-rules">
+        <div class="rule-item">
+          <div class="rule-dot dot-green"></div>
+          <span>6 decisioni da prendere</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-dot dot-yellow"></div>
+          <span>Budget totale: 3.000.000 €</span>
+        </div>
+      </div>
+      <button class="start-btn" onclick="startGame()">▶ Inizia ora</button>
+    </div>
+  `;
+}
+
+function renderStage(app) {
+  const stage = STAGES[state.stageIndex];
+  const canBack = state.history.length > 0;
+
+  // VFX stage — special rendering
+  if (stage.type === 'vfx') {
+    const vfxCost = getVfxCost();
+    const isSciFi = state.choices.genere === 'scifi';
+    const genreName = isSciFi ? 'Sci-Fi Action' : 
+                      state.choices.genere === 'horror' ? 'Horror / Thriller' : 'Drama Indie';
+
+    app.innerHTML = `
+      ${canBack ? `<button class="back-btn" onclick="goBack()">← Indietro</button>` : ''}
+      <div class="stage-label fade-in">${stage.label}</div>
+      <div class="stage-title fade-in stagger-1">${stage.title}</div>
+      <p class="stage-sub fade-in stagger-2">${stage.sub}</p>
+
+      <div class="vfx-notice fade-in stagger-3">
+        <span class="vfx-notice-icon">${isSciFi ? '🚀' : '🎬'}</span>
+        <div class="vfx-notice-title">Post-Produzione Automatica</div>
+        <p class="vfx-notice-text">
+          Hai scelto <strong>${genreName}</strong>. 
+          ${isSciFi 
+            ? 'I costi di VFX e montaggio sono elevati a causa degli effetti speciali complessi, della CGI e delle scenografie virtuali richieste da un blockbuster di fantascienza.' 
+            : 'I costi di VFX e montaggio sono contenuti. Un film di questo genere richiede correzione colore, editing standard e pochi effetti visivi.'}
+        </p>
+        <div class="vfx-notice-cost">${formatEuro(vfxCost)}</div>
+        <button class="vfx-confirm-btn" onclick="confirmVfx()">
+          ${isSciFi ? '💸 Accetta il costo' : '✅ Procedi'} →
+        </button>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px 18px;max-width:480px;font-size:0.82rem;opacity:0.6;">
+        💡 <strong>Nota:</strong> Questa spesa è automatica e non può essere evitata. Ogni film richiede montaggio e post-produzione.
+      </div>
+    `;
+    return;
+  }
+
+  let cardsHTML = '';
+
+  if (stage.type === 'cast') {
+    // Cast tier cards
+    cardsHTML = `<div class="cards-grid">`;
+    stage.options.forEach((opt, i) => {
+      const namesHTML = opt.names.map(n => `<div class="cast-name">${n}</div>`).join('');
+      cardsHTML += `
+        <div class="card fade-in stagger-${i+1}" onclick="makeChoice('${opt.id}', ${opt.cost})">
+          <span class="tier-badge ${opt.badge}">${opt.badgeLabel}</span>
+          <div class="cast-names">${namesHTML}</div>
+          <div class="card-cost">${formatEuro(opt.cost)}</div>
+        </div>
+      `;
+    });
+    cardsHTML += `</div>`;
+  } else {
+    // Standard choice cards
+    cardsHTML = `<div class="cards-grid">`;
+    stage.options.forEach((opt, i) => {
+      cardsHTML += `
+        <div class="card fade-in stagger-${i+1}" onclick="makeChoice('${opt.id}', ${opt.cost})">
+          <span class="card-icon">${opt.icon}</span>
+          <div class="card-name">${opt.name}</div>
+          <p class="card-desc">${opt.desc}</p>
+          <div class="card-cost">${formatEuro(opt.cost)}</div>
+        </div>
+      `;
+    });
+    cardsHTML += `</div>`;
+  }
+
+  app.innerHTML = `
+    ${canBack ? `<button class="back-btn" onclick="goBack()">← Indietro</button>` : ''}
+    <div class="stage-label fade-in">${stage.label}</div>
+    <div class="stage-title fade-in stagger-1">${stage.title}</div>
+    <p class="stage-sub fade-in stagger-2">${stage.sub}</p>
+    ${cardsHTML}
+  `;
+}
+
+function renderEnd(app) {
+  const result = getEndResult();
+  const spent = getSpent();
+
+  const outcomes = {
+    cannes: {
+      emoji: '🏆',
+      label: 'Festival di Cannes',
+      subtitle: `Eccellente gestione del budget. Il film è finito, la qualità c'è, e ora il mondo ti aspetta sulla Croisette.`,
+      cls: 'cannes',
+    },
+    flop: {
+      emoji: '📉',
+      label: 'Flop Qualitativo',
+      subtitle: `Tecnicamente il film esiste, ma hai tagliato troppo. Dritto in home video senza passare dal box office.`,
+      cls: 'flop',
+    },
+    bankrupt: {
+      emoji: '💸',
+      label: 'Bancarotta',
+      subtitle: `Hai sforato il budget. La produzione si ferma, il film non viene completato. Game over.`,
+      cls: 'bankrupt',
+    }
+  };
+
+  const o = outcomes[result];
+
+  // Build recap
+  const stageLabels = {
+    genere: 'Genere',
+    regia: 'Regia',
+    cast_f: 'Cast Femminile',
+    cast_m: 'Cast Maschile',
+    location: 'Location',
+    vfx: 'VFX & Montaggio',
+    distribuzione: 'Distribuzione',
+  };
+
+  let recapRows = '';
+  STAGES.forEach(s => {
+    const chosenId = state.choices[s.id];
+    if (!chosenId) return;
+
+    if (s.type === 'vfx') {
+      recapRows += `
+        <div class="recap-row">
+          <span class="recap-label">${stageLabels[s.id]}</span>
+          <span class="recap-value">${formatEuro(chosenId)}</span>
+        </div>
+      `;
+      return;
+    }
+
+    const opt = s.options.find(o => o.id === chosenId);
+    if (!opt) return;
+    const label = opt.name || opt.badgeLabel;
+    recapRows += `
+      <div class="recap-row">
+        <span class="recap-label">${stageLabels[s.id]}</span>
+        <span class="recap-value">${formatEuro(opt.cost)}</span>
+      </div>
+    `;
+  });
+
+  recapRows += `
+    <div class="recap-row total">
+      <span class="recap-label">TOTALE SPESO</span>
+      <span class="recap-value" style="color:var(--yellow)">${formatEuro(spent)}</span>
+    </div>
+  `;
+
+  app.innerHTML = `
+    <div class="end-screen">
+      <div style="font-size:3.5rem;margin-bottom:12px;animation:fadeInUp 0.4s both">${o.emoji}</div>
+      <div class="end-outcome ${o.cls} fade-in">${o.label}</div>
+      <p class="end-subtitle fade-in stagger-1">${o.subtitle}</p>
+      <div class="recap-table fade-in stagger-2">${recapRows}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="restart-btn" onclick="startGame()">↺ Rigioca</button>
+        <button class="restart-btn" onclick="backToIntro()" style="border-color:rgba(255,255,255,0.12);opacity:0.5;">← Home</button>
+      </div>
+      <div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);">
+        <p style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0.4;margin-bottom:4px;">Vuoi farlo per davvero?</p>
+        <p style="font-size:0.9rem;opacity:0.6;">Corso Cinema &amp; TV Production · <strong style="color:var(--yellow)">ITS Academy Roberto Rossellini</strong> · itsrossellini.it</p>
+      </div>
+    </div>
+  `;
+}
+
+function backToIntro() {
+  state = {
+    screen: 'intro',
+    stageIndex: 0,
+    budget: BUDGET,
+    choices: {},
+    history: [],
+  };
+  render();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
