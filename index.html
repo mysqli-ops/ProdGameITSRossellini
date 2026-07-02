@@ -1,986 +1,1150 @@
-
-  /* File scritto da Giosuè Nicastro con aiuto di AI */
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Producer Challenge — ITS Rossellini</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --blue: #1a6bbf;
-    --blue-dark: #0d3d6e;
-    --blue-mid: #1e5fa0;
-    --yellow: #f5c518;
-    --white: #f0ece4;
-    --grey: #2a2a2a;
-    --card-bg: rgba(255,255,255,0.06);
-    --card-border: rgba(255,255,255,0.12);
-    --green: #2ecc71;
-    --orange: #e67e22;
-    --red: #e74c3c;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Mix 2026 – Seconda Edizione | Clan Lux Viae Caltagirone</title>
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    <!-- SEO & Social Sharing [FIX #9] -->
+    <meta name="description" content="Summer Mix seconda edizione – tornei di pallavolo, ping pong e burraco, jam session, DJ set e banchetto. 27 luglio ore 16:30, Parrocchia San Giovanni Bosco, Caltagirone.">
+    <meta property="og:title" content="Summer Mix 2026 – Seconda Edizione">
+    <meta property="og:description" content="Tornei di sport e carte, associazioni, cibo e DJ set. 27 luglio a Caltagirone – Clan Lux Viae AGESCI.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="TODO_URL_POSTER">
+    <meta property="og:locale" content="it_IT">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Summer Mix 2026 – Seconda Edizione">
+    <meta name="twitter:description" content="Tornei, associazioni, cibo e DJ set. 27 luglio a Caltagirone.">
+    <meta name="twitter:image" content="TODO_URL_POSTER">
 
-  body {
-    background: var(--blue-dark);
-    color: var(--white);
-    font-family: 'Barlow', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
-  /* Grain overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0.4;
-  }
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-bg-dark: #F8F9FA;
+            --color-pink: #FFA7D7;
+            --color-pink-dark: #D985B4;
+            --color-green: #3BB789;
+            --color-green-dark: #2A8A66;
+            --color-yellow: #FFE372;
+            --color-yellow-dark: #D4BD59;
+            --color-red: #FE4F60;
+            --color-red-dark: #CC3D4B;
+            --color-navy: #1D264F;
+            --color-navy-dark: #141A38;
+            --color-text-dark: #1D264F;
+            --color-text-light: #FFFFFF;
+        }
 
-  /* HUD */
-  #hud {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 500;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 28px;
-    background: rgba(13, 61, 110, 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(245,197,24,0.3);
-  }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  #hud-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
-    font-size: 1.1rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--yellow);
-  }
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-dark) 100%);
+            color: var(--color-text-dark);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-  #hud-stage {
-    display: flex;
-    align-items: center;
-  }
+        /* --- CANVAS PARTICELLE --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            display: block;
+        }
 
-  /* Progress bar */
-  #progress-bar-wrap {
-    position: fixed;
-    top: 56px; left: 0; right: 0;
-    height: 3px;
-    background: rgba(255,255,255,0.08);
-    z-index: 500;
-  }
-  #progress-bar {
-    height: 100%;
-    background: var(--yellow);
-    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-    width: 0%;
-    box-shadow: 0 0 8px var(--yellow);
-  }
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
 
-  /* Main container */
-  #app {
-    padding: 100px 24px 60px;
-    max-width: 960px;
-    margin: 0 auto;
-    min-height: 100vh;
-  }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
 
-  /* Stage header */
-  .stage-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--yellow);
-    margin-bottom: 8px;
-    opacity: 0.9;
-  }
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            padding: 40px 20px 30px 20px;
+        }
 
-  .stage-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    line-height: 0.92;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    letter-spacing: -0.01em;
-  }
+        .logo-placeholder {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-red);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
 
-  .stage-sub {
-    font-size: 0.95rem;
-    font-weight: 300;
-    opacity: 0.7;
-    margin-bottom: 48px;
-    max-width: 540px;
-    line-height: 1.5;
-  }
+        .logo-image-placeholder {
+            width: 100%;
+            max-width: 340px;
+            height: 110px;
+            margin: 0 auto 15px auto;
+            border: 2px dashed var(--color-red);
+            border-radius: 12px;
+            background-color: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-dark);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .logo-image-placeholder svg { margin-bottom: 6px; color: var(--color-red); }
 
-  /* Cards grid */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 40px;
-  }
+        /* h1 visibile — era assente nella v1 [FIX implicito a11y] */
+        .event-title {
+            font-size: 3.2rem;
+            font-weight: 900;
+            color: var(--color-text-dark);
+            line-height: 1;
+            margin-bottom: 4px;
+            letter-spacing: -1px;
+        }
 
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 28px 24px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-    position: relative;
-    overflow: hidden;
-  }
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
 
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(245,197,24,0.06) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
+        .info-box {
+            background-color: #ffffff;
+            border-bottom: 4px solid var(--color-yellow);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
 
-  .card:hover {
-    border-color: rgba(245,197,24,0.5);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
-  }
+        .info-item {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #333;
+        }
+        .info-item:last-child { margin-bottom: 0; }
 
-  .card:hover::before { opacity: 1; }
+        .info-item strong {
+            color: var(--color-text-dark);
+            margin-right: 5px;
+        }
 
-  .card-icon {
-    font-size: 2.2rem;
-    margin-bottom: 16px;
-    display: block;
-  }
+        .intro-text {
+            font-size: 1.05rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--color-text-dark);
+            margin-top: 15px;
+            background: rgba(254,79,96,0.1);
+            border: 2px solid var(--color-red);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 10px rgba(254,79,96,0.15);
+        }
+        .intro-text:active { transform: scale(0.98); }
+        /* Focus visible per tastiera [FIX #8] */
+        .intro-text:focus-visible {
+            outline: 3px solid var(--color-navy);
+            outline-offset: 3px;
+        }
 
-  .card-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.35rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 10px;
-  }
+        /* --- ACCORDION CARDS --- */
+        .section-card {
+            border-radius: 12px;
+            margin-bottom: 25px;
+            position: relative;
+            cursor: pointer;
+            transition: top 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+            top: 0;
+            overflow: hidden;
+            outline: none; /* sostituito da focus-visible */
+        }
 
-  .card-desc {
-    font-size: 0.82rem;
-    font-weight: 300;
-    opacity: 0.65;
-    line-height: 1.55;
-    margin-bottom: 20px;
-  }
+        /* Focus ring keyboard-only [FIX #8] */
+        .section-card:focus-visible {
+            outline: 3px solid var(--color-navy);
+            outline-offset: 3px;
+        }
 
-  .card-cost {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: var(--yellow);
-    letter-spacing: 0.05em;
-  }
+        .card-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-  /* Cast tier cards */
-  .cast-names {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 18px;
-  }
+        .card-header h2 { font-size: 1.4rem; margin: 0; }
+        .icon-toggle {
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
 
-  .cast-name {
-    font-size: 0.88rem;
-    font-weight: 500;
-    opacity: 0.85;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
+        /* Card colors */
+        .card-pink   { background-color: var(--color-pink);  color: var(--color-text-dark); box-shadow: 0 8px 0 var(--color-pink-dark),  0 15px 20px rgba(0,0,0,0.1); }
+        .card-green  { background-color: var(--color-green); color: #fff;                   box-shadow: 0 8px 0 var(--color-green-dark), 0 15px 20px rgba(0,0,0,0.1); }
+        .card-yellow { background-color: var(--color-yellow);color: var(--color-text-dark); box-shadow: 0 8px 0 var(--color-yellow-dark),0 15px 20px rgba(0,0,0,0.1); }
+        .card-red    { background-color: var(--color-red);   color: #fff;                   box-shadow: 0 8px 0 var(--color-red-dark),   0 15px 20px rgba(0,0,0,0.1); }
+        .card-navy   { background-color: var(--color-navy);  color: #fff;                   box-shadow: 0 8px 0 var(--color-navy-dark),  0 15px 20px rgba(0,0,0,0.1); }
 
-  .cast-name:last-child { border-bottom: none; }
+        /* Active 3D press */
+        .section-card:active { top: 4px; }
+        .card-pink:active   { box-shadow: 0 4px 0 var(--color-pink-dark),  0 8px 10px rgba(0,0,0,0.1); }
+        .card-green:active  { box-shadow: 0 4px 0 var(--color-green-dark), 0 8px 10px rgba(0,0,0,0.1); }
+        .card-yellow:active { box-shadow: 0 4px 0 var(--color-yellow-dark),0 8px 10px rgba(0,0,0,0.1); }
+        .card-red:active    { box-shadow: 0 4px 0 var(--color-red-dark),   0 8px 10px rgba(0,0,0,0.1); }
+        .card-navy:active   { box-shadow: 0 4px 0 var(--color-navy-dark),  0 8px 10px rgba(0,0,0,0.1); }
 
-  .tier-badge {
-    display: inline-block;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
-    margin-bottom: 14px;
-  }
+        /* Contenuto espandibile
+         * FIX #6: max-height rimosso da qui, viene impostato via JS su scrollHeight reale.
+         * La transition CSS si applica comunque perché anima la proprietà.
+         */
+        .card-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out, opacity 0.25s ease-in;
+            padding: 0 20px;
+        }
 
-  .tier-star { background: rgba(245,197,24,0.2); color: var(--yellow); border: 1px solid rgba(245,197,24,0.4); }
-  .tier-talent { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
-  .tier-indie { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+        .section-card.open .icon-toggle { transform: rotate(45deg); }
 
-  /* Back button */
-  .back-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.5);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+        .card-content-inner {
+            border-top: 2px solid rgba(255,255,255,0.4);
+            padding-top: 15px;
+            padding-bottom: 25px;
+        }
+        .card-pink .card-content-inner,
+        .card-yellow .card-content-inner { border-top-color: rgba(0,0,0,0.1); }
 
-  .back-btn:hover {
-    border-color: rgba(255,255,255,0.5);
-    color: var(--white);
-  }
+        /* Layout testo + immagine */
+        .card-body-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
 
-  /* Intro screen */
-  #intro-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100vh - 160px);
-    padding: 20px 0;
-  }
+        .card-text-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
 
-  .intro-eyebrow {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--yellow);
-    margin-bottom: 20px;
-  }
+        .card-text-wrapper p {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
 
-  .intro-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
-    font-size: clamp(3.5rem, 9vw, 7rem);
-    line-height: 0.88;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-    letter-spacing: -0.02em;
-  }
+        /*
+         * SLOT IMMAGINE — FIX #7
+         * Sostituzione: rimuovi il div .card-media-placeholder e inserisci:
+         *   <img
+         *     src=""
+         *     data-src="nome_file.webp"
+         *     loading="manual"
+         *     width="150" height="150"
+         *     alt="Descrizione"
+         *     class="card-media-img"
+         *   >
+         * Il JS nel toggleCard imposta src da data-src al primo open.
+         * Formato consigliato: WebP, max 300×300px (2× retina), < 50KB.
+         * Tool: https://squoosh.app — seleziona WebP, qualità 80.
+         */
+        .card-media-placeholder {
+            flex: 0 0 calc(33.333% - 10px);
+            min-height: 110px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 10px;
+            overflow: hidden;
+        }
 
-  .intro-title span {
-    color: var(--yellow);
-    display: block;
-  }
+        /* Stili per <img> reale quando sostituisce il placeholder */
+        .card-media-img {
+            flex: 0 0 calc(33.333% - 10px);
+            min-height: 110px;
+            border-radius: 8px;
+            object-fit: cover;
+            display: block;
+        }
 
-  .intro-budget {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    color: var(--yellow);
-    margin-bottom: 16px;
-    letter-spacing: 0.02em;
-  }
+        .card-pink .card-media-placeholder,
+        .card-yellow .card-media-placeholder {
+            background-color: rgba(255,255,255,0.5);
+            border: 1px dashed rgba(29,38,79,0.25);
+            color: rgba(29,38,79,0.7);
+        }
+        .card-green .card-media-placeholder,
+        .card-red .card-media-placeholder,
+        .card-navy .card-media-placeholder {
+            background-color: rgba(255,255,255,0.15);
+            border: 1px dashed rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.9);
+        }
+        .card-media-placeholder svg { margin-bottom: 4px; }
 
-  .intro-rules {
-    margin: 28px 0 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 480px;
-  }
+        /* FIX #7: sotto 380px l'immagine va in colonna sotto il testo */
+        @media (max-width: 380px) {
+            .card-body-wrapper { flex-direction: column; }
+            .card-media-placeholder,
+            .card-media-img {
+                flex: none;
+                width: 100%;
+                height: 140px;
+            }
+        }
 
-  .rule-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    opacity: 0.8;
-  }
+        .details-list { list-style-type: none; margin: 10px 0; }
+        .details-list li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        .details-list li::before { content: "•"; position: absolute; left: 0; font-weight: bold; }
 
-  .rule-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 6px;
-  }
+        .timeline { margin-top: 10px; }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 10px;
+            border-left: 2px solid rgba(255,255,255,0.4);
+            padding-left: 10px;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+        .card-pink .timeline-item,
+        .card-yellow .timeline-item { border-left-color: rgba(0,0,0,0.2); }
+        .timeline-time {
+            font-weight: 700;
+            min-width: 90px;
+            font-family: 'Montserrat', sans-serif;
+            flex-shrink: 0;
+        }
 
-  .dot-green { background: var(--green); }
-  .dot-yellow { background: var(--yellow); }
-  .dot-red { background: var(--red); }
+        /* Pulsanti */
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 14px;
+            background-color: #ffffff;
+            color: var(--color-text-dark);
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            border-radius: 8px;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            box-shadow: 0 4px 0 #CBD5E1;
+            transition: transform 0.1s, box-shadow 0.1s;
+            cursor: pointer;
+            border: none;
+            -webkit-appearance: none;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 #CBD5E1; }
 
-  .start-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--yellow);
-    color: #0d1f35;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 16px 36px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    align-self: flex-start;
-  }
+        .card-green .btn,
+        .card-red .btn,
+        .card-navy .btn {
+            background-color: var(--color-yellow);
+            color: var(--color-text-dark);
+            box-shadow: 0 4px 0 var(--color-yellow-dark);
+        }
+        .card-green .btn:active,
+        .card-red .btn:active,
+        .card-navy .btn:active { box-shadow: 0 0 0 var(--color-yellow-dark); }
 
-  .start-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(245,197,24,0.4);
-  }
+        /* Pulsante disabilitato — link form non ancora disponibile [FIX #3] */
+        .btn[disabled],
+        .btn-disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+            box-shadow: none;
+        }
 
-  /* End screens */
-  .end-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100vh - 160px);
-    padding: 20px 0;
-  }
+        .badge-tbd {
+            display: inline-block;
+            background-color: rgba(0,0,0,0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-style: italic;
+        }
+        .card-green .badge-tbd,
+        .card-red .badge-tbd,
+        .card-navy .badge-tbd { background-color: rgba(255,255,255,0.25); }
 
-  .end-outcome {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: 0.9;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
+        /* --- MODALE SPONSOR --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: rgba(29,38,79,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 450px;
+            border: 4px solid var(--color-red);
+            border-radius: 12px;
+            padding: 25px 20px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
 
-  .end-outcome.cannes { color: var(--yellow); }
-  .end-outcome.flop { color: var(--orange); }
-  .end-outcome.bankrupt { color: var(--red); }
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-red);
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-modal:focus-visible {
+            outline: 3px solid var(--color-navy);
+            border-radius: 4px;
+        }
 
-  .end-subtitle {
-    font-size: 1.05rem;
-    font-weight: 300;
-    opacity: 0.75;
-    max-width: 480px;
-    line-height: 1.6;
-    margin-bottom: 36px;
-  }
+        .modal-content h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--color-text-dark);
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(254,79,96,0.2);
+            padding-bottom: 10px;
+        }
+        .sponsor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .sponsor-placeholder {
+            background-color: #f8f9fa;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-align: center;
+        }
+        .sponsor-placeholder svg { margin-bottom: 5px; color: #94a3b8; }
 
-  .recap-table {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    overflow: hidden;
-    max-width: 480px;
-    margin-bottom: 36px;
-  }
-
-  .recap-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    font-size: 0.88rem;
-  }
-
-  .recap-row:last-child { border-bottom: none; }
-  .recap-row.total {
-    background: rgba(245,197,24,0.08);
-    font-weight: 600;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem;
-  }
-
-  .recap-label { opacity: 0.65; }
-  .recap-value { font-weight: 600; }
-
-  .restart-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: transparent;
-    color: var(--white);
-    border: 1px solid rgba(255,255,255,0.3);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    align-self: flex-start;
-  }
-
-  .restart-btn:hover {
-    border-color: var(--yellow);
-    color: var(--yellow);
-  }
-
-  /* Film slate decoration */
-  .slate-line {
-    width: 48px;
-    height: 4px;
-    background: var(--yellow);
-    margin-bottom: 24px;
-    border-radius: 2px;
-  }
-
-  /* Animate in */
-  .fade-in {
-    animation: fadeInUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
-  }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .stagger-1 { animation-delay: 0.05s; }
-  .stagger-2 { animation-delay: 0.1s; }
-  .stagger-3 { animation-delay: 0.15s; }
-  .stagger-4 { animation-delay: 0.2s; }
-
-  /* Divider */
-  .section-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.08);
-    margin: 32px 0;
-  }
-
-  .cast-section-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    opacity: 0.5;
-    margin-bottom: 16px;
-  }
-
-  /* VFX Stage specific styles */
-  .vfx-notice {
-    background: rgba(245,197,24,0.08);
-    border: 1px solid rgba(245,197,24,0.2);
-    border-radius: 12px;
-    padding: 28px 24px;
-    margin-bottom: 32px;
-    max-width: 480px;
-  }
-
-  .vfx-notice-icon {
-    font-size: 2.5rem;
-    margin-bottom: 16px;
-    display: block;
-  }
-
-  .vfx-notice-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.4rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 12px;
-    color: var(--yellow);
-  }
-
-  .vfx-notice-text {
-    font-size: 0.9rem;
-    font-weight: 300;
-    opacity: 0.8;
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-
-  .vfx-notice-cost {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1.6rem;
-    color: var(--yellow);
-    letter-spacing: 0.05em;
-    margin-bottom: 20px;
-  }
-
-  .vfx-confirm-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--yellow);
-    color: #0d1f35;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 14px 28px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .vfx-confirm-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(245,197,24,0.4);
-  }
-</style>
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 40px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+        footer h3 { font-size: 1.2rem; color: var(--color-text-dark); margin-bottom: 15px; }
+        footer p { margin-bottom: 12px; }
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-pink-dark);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .footer-note { font-size: 0.8rem; color: #718096; margin-top: 15px; }
+    </style>
 </head>
 <body>
 
-<!-- HUD -->
-<div id="hud">
-  <div id="hud-title">🎬 Producer Challenge</div>
-  <div id="hud-stage">—</div>
-</div>
-<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+    <!-- Canvas decorativo, ignorato da screen reader [FIX #8] -->
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-<!-- App root -->
-<div id="app"></div>
+    <div class="container">
 
-<script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
+        <!-- HEADER -->
+        <header>
+            <div class="logo-placeholder">AGESCI Caltagirone 1 • Clan Lux Viae</div>
 
-const BUDGET = 3_000_000;
-const FLOP_THRESHOLD = 1_800_000;   // spesa minima per non essere un flop
-const TOTAL_STAGES = 7;
+            <!-- TODO: sostituire con <img src="logo.webp" alt="Logo Summer Mix"> -->
+            <div class="logo-image-placeholder" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                Placeholder Logo (PNG/WebP)
+            </div>
 
-const STAGES = [
-  {
-    id: 'genere',
-    label: 'Fase 1',
-    title: 'Il Genere',
-    sub: 'La prima decisione definisce tutto: tono, budget, aspettative.',
-    type: 'choice',
-    options: [
-      { id: 'indie', icon: '🎭', name: 'Drama Indie', desc: 'Una storia intima, pochi personaggi, dialoghi profondi.', cost: 150_000 },
-      { id: 'horror', icon: '👻', name: 'Horror / Thriller', desc: 'Tensione, trucco speciale e location inquietanti.', cost: 300_000 },
-      { id: 'scifi', icon: '🚀', name: 'Sci-Fi Action', desc: 'Effetti visivi complessi e scenografie futuristiche.', cost: 600_000 },
-    ]
-  },
-  {
-    id: 'regia',
-    label: 'Fase 2',
-    title: 'La Regia',
-    sub: 'Chi guida il set determina qualità e tempi di lavorazione.',
-    type: 'choice',
-    options: [
-      { id: 'maestro', icon: '🏆', name: 'Il Maestro', desc: 'Premiato, esperto, garantisce qualità ma è molto costoso e richiede tempi lunghi.', cost: 600_000 },
-      { id: 'esordiente', icon: '🎓', name: "L'Esordiente", desc: "Giovane talento dell'ITS. Creativo, affamato, ma con meno esperienza nella gestione dei tempi.", cost: 100_000 },
-    ]
-  },
-  {
-    id: 'cast_f',
-    label: 'Fase 3A',
-    title: 'Il Cast Femminile',
-    sub: 'Scegli il pacchetto di 3 attrici per il tuo film.',
-    type: 'cast',
-    options: [
-      { id: 'star_f', badge: 'tier-star', badgeLabel: 'Star', names: ['Zendaya', 'Florence Pugh', 'Sydney Sweeney'], cost: 1_200_000 },
-      { id: 'talent_f', badge: 'tier-talent', badgeLabel: 'Talents', names: ['Victoria Pedretti', 'Millie Bobby Brown', 'Cailee Spaeny'], cost: 600_000 },
-      { id: 'indie_f', badge: 'tier-indie', badgeLabel: 'Indie', names: ['Karen Gillian', 'Simone Ashley', 'Kaitlyn Dever'], cost: 300_000 },
-    ]
-  },
-  {
-    id: 'cast_m',
-    label: 'Fase 3B',
-    title: 'Il Cast Maschile',
-    sub: 'Scegli il pacchetto di 3 attori per il tuo film.',
-    type: 'cast',
-    options: [
-      { id: 'star_m', badge: 'tier-star', badgeLabel: 'Star', names: ['Timothée Chalamet', 'Tom Holland', 'Jacob Elordi'], cost: 1_200_000 },
-      { id: 'talent_m', badge: 'tier-talent', badgeLabel: 'Talents', names: ['Austin Butler', 'Jeremy Allen White', 'Finn Wolfhard'], cost: 600_000 },
-      { id: 'indie_m', badge: 'tier-indie', badgeLabel: 'Indie', names: ['Dominic Fike', 'Noah Centineo', 'Caleb McLaughlin'], cost: 300_000 },
-    ]
-  },
-  {
-    id: 'location',
-    label: 'Fase 4',
-    title: 'La Location',
-    sub: 'Dove girate? Ogni scelta ha implicazioni tecniche e logistiche.',
-    type: 'choice',
-    options: [
-      { id: 'roma', icon: '🏛️', name: 'Roma (Esterni)', desc: 'Permessi, blocchi stradali, meteo incerto.', cost: 100_000 },
-      { id: 'studio', icon: '🎬', name: 'Studio / Teatro di posa', desc: 'Controllo totale, scenografie da costruire.', cost: 250_000 },
-      { id: 'virtual', icon: '🥽', name: 'Virtual Production', desc: 'LED Wall, tecnologia Unreal Engine.', cost: 500_000 },
-    ]
-  },
-  {
-    id: 'vfx',
-    label: 'Fase 5',
-    title: 'VFX & Montaggio',
-    sub: 'La post-produzione è un costo inevitabile. La cifra dipende dal genere scelto.',
-    type: 'vfx',
-    // No options here — it's an auto-deduct notice stage
-  },
-  {
-    id: 'distribuzione',
-    label: 'Fase 6',
-    title: 'La Distribuzione',
-    sub: 'Hai finito il film. Come lo porti al pubblico?',
-    type: 'choice',
-    options: [
-      { id: 'festival', icon: '🏅', name: 'Premier e Festival', desc: 'Cannes, Venezia, Berlino. Grande prestigio, costi di PR altissimi.', cost: 100_000 },
-      { id: 'viral', icon: '📱', name: 'Social & Web Viral', desc: 'Campagna aggressiva su TikTok e Instagram per giovani.', cost: 40_000 },
-    ]
-  }
-];
+            <!-- h1 visibile aggiunto — era assente nella v1 -->
+            <h1 class="event-title">Summer Mix</h1>
+            <div class="subtitle">Seconda Edizione</div>
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
+            <div class="info-box">
+                <div class="info-item"><strong>📅 Data:</strong> Domenica 27 luglio 2026</div>
+                <div class="info-item"><strong>🕓 Apertura:</strong> Ore 16:30</div>
+                <div class="info-item"><strong>📍 Luogo:</strong> Parrocchia San Giovanni Bosco</div>
+                <div class="info-item"><strong>🗺 Indirizzo:</strong> Via Tenente Cataldo n° 34, Caltagirone</div>
+            </div>
 
-let state = {
-  screen: 'intro',       // 'intro' | 'stage' | 'end'
-  stageIndex: 0,
-  budget: BUDGET,
-  choices: {},
-  history: [],           // undo stack: array of snapshots
-};
+            <!-- Sponsor modal trigger [FIX #8: role + tabindex + keyboard] -->
+            <div class="intro-text"
+                 role="button"
+                 tabindex="0"
+                 aria-haspopup="dialog"
+                 onclick="openSponsorModal()"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSponsorModal();}">
+                🎁 Clicca qui per vedere i nostri sponsor!
+            </div>
+        </header>
 
-function snapshot() {
-  return JSON.parse(JSON.stringify(state));
-}
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-
-function formatEuro(n) {
-  return n.toLocaleString('it-IT') + ' €';
-}
-
-function getVfxCost() {
-  return state.choices.genere === 'scifi' ? 600_000 : 100_000;
-}
-
-function getSpent() {
-  return BUDGET - state.budget;
-}
-
-function getEndResult() {
-  const spent = getSpent();
-  if (state.budget < 0) return 'bankrupt';
-  if (spent < FLOP_THRESHOLD) return 'flop';
-  return 'cannes';
-}
-
-function updateHUD() {
-  const stageEl = document.getElementById('hud-stage');
-
-  // Stage dots
-  if (state.screen === 'stage') {
-    const dots = Array.from({length: TOTAL_STAGES}, (_, i) => {
-      if (i < state.stageIndex) return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin:0 3px;"></span>`;
-      if (i === state.stageIndex) return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin:0 3px;box-shadow:0 0 6px var(--yellow);"></span>`;
-      return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);margin:0 3px;"></span>`;
-    }).join('');
-    stageEl.innerHTML = dots;
-  } else {
-    stageEl.textContent = '';
-  }
-
-  // Progress bar
-  const bar = document.getElementById('progress-bar');
-  if (state.screen === 'stage') {
-    bar.style.width = ((state.stageIndex) / TOTAL_STAGES * 100) + '%';
-  } else if (state.screen === 'end') {
-    bar.style.width = '100%';
-  } else {
-    bar.style.width = '0%';
-  }
-}
-
-// ─── ACTIONS ─────────────────────────────────────────────────────────────────
-
-function startGame() {
-  state.history = [];
-  state.stageIndex = 0;
-  state.budget = BUDGET;
-  state.choices = {};
-  state.screen = 'stage';
-  render();
-}
-
-function makeChoice(optionId, cost) {
-  // Push snapshot before modifying
-  state.history.push(snapshot());
-
-  const stage = STAGES[state.stageIndex];
-  state.choices[stage.id] = optionId;
-  state.budget -= cost;
-
-  // After last stage, go to end
-  if (state.stageIndex === STAGES.length - 1) {
-    state.screen = 'end';
-  } else {
-    state.stageIndex += 1;
-  }
-
-  render();
-}
-
-function confirmVfx() {
-  // Push snapshot before modifying
-  state.history.push(snapshot());
-
-  const vfxCost = getVfxCost();
-  state.choices.vfx = vfxCost;
-  state.budget -= vfxCost;
-
-  // After VFX stage, go to distribution
-  if (state.stageIndex === STAGES.length - 1) {
-    state.screen = 'end';
-  } else {
-    state.stageIndex += 1;
-  }
-
-  render();
-}
-
-function goBack() {
-  if (state.history.length === 0) return;
-  state = state.history.pop();
-  render();
-}
-
-// ─── RENDER ──────────────────────────────────────────────────────────────────
-
-function render() {
-  updateHUD();
-  const app = document.getElementById('app');
-
-  if (state.screen === 'intro') {
-    renderIntro(app);
-  } else if (state.screen === 'stage') {
-    renderStage(app);
-  } else if (state.screen === 'end') {
-    renderEnd(app);
-  }
-}
-
-function renderIntro(app) {
-  app.innerHTML = `
-    <div id="intro-screen">
-      <div class="intro-eyebrow">ITS Academy Roberto Rossellini · Open Day</div>
-      <div class="slate-line"></div>
-      <div class="intro-title">
-        Producer<br><span>Challenge</span>
-      </div>
-      <div class="intro-budget">3.000.000 €</div>
-      <p style="font-size:0.95rem;font-weight:300;opacity:0.65;max-width:480px;line-height:1.6;">
-        Il tuo budget per produrre un film. Ogni scelta ha un costo.
-        Gestisci le risorse, assembla il cast, scegli dove girare.
-        Ce la farai ad arrivare a Cannes?
-      </p>
-      <div class="intro-rules">
-        <div class="rule-item">
-          <div class="rule-dot dot-green"></div>
-          <span>6 decisioni da prendere</span>
+        <!-- ===== CARD 1: PALLAVOLO ===== -->
+        <div class="section-card card-pink"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleCard(this)"
+             onkeydown="handleCardKey(event,this)">
+            <div class="card-header">
+                <h2>🏐 Pallavolo</h2>
+                <div class="icon-toggle" aria-hidden="true">+</div>
+            </div>
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <div class="card-body-wrapper">
+                        <div class="card-text-wrapper">
+                            <p>Crea la tua squadra e sfida i tuoi amici nel grande torneo di pallavolo!</p>
+                            <ul class="details-list">
+                                <li><strong>Inizio:</strong> Ore 17:30</li>
+                                <li><strong>Squadre:</strong> Minimo 6 giocatori.</li>
+                                <li><strong>Quota:</strong> €3 solo torneo / €5 torneo + cena.</li>
+                                <li><strong>Iscrizioni entro:</strong> 23 luglio.</li>
+                                <li><strong>Come iscriversi:</strong> Scrivere via WhatsApp al numero indicato, comunicando nome squadra, numero giocatori e interesse alla cena.</li>
+                            </ul>
+                        </div>
+                        <!--
+                            TODO img: <img src="" data-src="pallavolo.webp"
+                            loading="manual" width="150" height="150"
+                            alt="Illustrazione torneo pallavolo" class="card-media-img">
+                        -->
+                        <div class="card-media-placeholder" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            IMG<br>WebP
+                        </div>
+                    </div>
+                    <a href="https://wa.me/393515099889?text=Iscrizione+torneo+pallavolo+Summer+Mix"
+                       class="btn"
+                       target="_blank"
+                       rel="noopener"
+                       onclick="event.stopPropagation()">Iscrivi la squadra</a>
+                </div>
+            </div>
         </div>
-        <div class="rule-item">
-          <div class="rule-dot dot-yellow"></div>
-          <span>Budget totale: 3.000.000 €</span>
+
+        <!-- ===== CARD 2: PING PONG ===== -->
+        <div class="section-card card-green"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleCard(this)"
+             onkeydown="handleCardKey(event,this)">
+            <div class="card-header">
+                <h2>🏓 Ping Pong</h2>
+                <div class="icon-toggle" aria-hidden="true">+</div>
+            </div>
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <div class="card-body-wrapper">
+                        <div class="card-text-wrapper">
+                            <p>Velocità, riflessi e precisione. Mostra a tutti il tuo talento al tavolo!</p>
+                            <ul class="details-list">
+                                <li><strong>Inizio:</strong> Ore 17:30</li>
+                                <li><strong>Iscrizioni:</strong> Sul posto oppure via WhatsApp (pre-iscrizione).</li>
+                                <li><strong>Quota:</strong> <span class="badge-tbd">Da confermare</span></li>
+                            </ul>
+                        </div>
+                        <!--
+                            TODO img: <img src="" data-src="pingpong.webp"
+                            loading="manual" width="150" height="150"
+                            alt="Illustrazione torneo ping pong" class="card-media-img">
+                        -->
+                        <div class="card-media-placeholder" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            IMG<br>WebP
+                        </div>
+                    </div>
+                    <a href="https://wa.me/393515099889?text=Pre-iscrizione+torneo+ping+pong+Summer+Mix"
+                       class="btn"
+                       target="_blank"
+                       rel="noopener"
+                       onclick="event.stopPropagation()">Pre-iscriviti</a>
+                </div>
+            </div>
         </div>
-      </div>
-      <button class="start-btn" onclick="startGame()">▶ Inizia ora</button>
+
+        <!-- ===== CARD 3: ASSOCIAZIONI ===== -->
+        <div class="section-card card-yellow"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleCard(this)"
+             onkeydown="handleCardKey(event,this)">
+            <div class="card-header">
+                <h2>♟️ Associazioni</h2>
+                <div class="icon-toggle" aria-hidden="true">+</div>
+            </div>
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <div class="card-body-wrapper">
+                        <div class="card-text-wrapper">
+                            <p>Durante tutto l'evento, le associazioni partner gestiranno aree dedicate:</p>
+                            <ul class="details-list">
+                                <!-- FIX #2: ripristinata Tana del Goblin -->
+                                <li><strong>SHIELD Sicilia / Tana del Goblin di Caltagirone:</strong> Giochi da tavolo.</li>
+                                <li><strong>Circolo Scacchistico "Le Muse":</strong> Area scacchi, in collaborazione con l'Accademia Don Pietro Carrera.</li>
+                                <li><strong>KaltaStreetEagles:</strong> Esibizione ore 17:00, poi area dedicata per tutta la durata.</li>
+                            </ul>
+                        </div>
+                        <!--
+                            TODO img: <img src="" data-src="associazioni.webp"
+                            loading="manual" width="150" height="150"
+                            alt="" class="card-media-img">
+                        -->
+                        <div class="card-media-placeholder" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            IMG<br>WebP
+                        </div>
+                    </div>
+                    <a href="https://wa.me/393515099889"
+                       class="btn"
+                       target="_blank"
+                       rel="noopener"
+                       onclick="event.stopPropagation()">Info e contatti</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CARD 4: BURRACO (dettagli TBD) ===== -->
+        <div class="section-card card-navy"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleCard(this)"
+             onkeydown="handleCardKey(event,this)">
+            <div class="card-header">
+                <h2>🃏 Burraco</h2>
+                <div class="icon-toggle" aria-hidden="true">+</div>
+            </div>
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <div class="card-body-wrapper">
+                        <div class="card-text-wrapper">
+                            <p>Torneo di carte organizzato da <strong>ASD Burraco "La Scala"</strong>. Testa le tue abilità contro i migliori giocatori!</p>
+                            <ul class="details-list">
+                                <li><strong>Orario:</strong> <span class="badge-tbd">Da confermare</span></li>
+                                <li><strong>Iscrizioni:</strong> <span class="badge-tbd">Da confermare</span></li>
+                                <li><strong>Quota:</strong> <span class="badge-tbd">Da confermare</span></li>
+                            </ul>
+                            <p style="font-size:0.85rem; opacity:0.8; margin-top:8px;">Per informazioni aggiornate contatta il numero qui sotto.</p>
+                        </div>
+                        <!--
+                            TODO img: <img src="" data-src="burraco.webp"
+                            loading="manual" width="150" height="150"
+                            alt="Illustrazione torneo burraco" class="card-media-img">
+                        -->
+                        <div class="card-media-placeholder" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            IMG<br>WebP
+                        </div>
+                    </div>
+                    <a href="tel:+393515099889"
+                       class="btn"
+                       onclick="event.stopPropagation()">Info Burraco</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CARD 5: CIBO & DJ SET ===== -->
+        <div class="section-card card-red"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleCard(this)"
+             onkeydown="handleCardKey(event,this)">
+            <div class="card-header">
+                <h2>🍔 Cibo & DJ Set</h2>
+                <div class="icon-toggle" aria-hidden="true">+</div>
+            </div>
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <div class="card-body-wrapper">
+                        <div class="card-text-wrapper">
+                            <p>Pomeriggio accompagnato da <strong>Jam Session</strong> live, poi serata con DJ Set!</p>
+                            <div class="timeline">
+                                <!-- FIX #10: "Pome" → "Pomeriggio" -->
+                                <div class="timeline-item">
+                                    <div class="timeline-time">Pomeriggio</div>
+                                    <div class="timeline-content"><strong>Banchetto:</strong> Spuntini dolci e salati, offerta libera.</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time">Sera</div>
+                                    <div class="timeline-content">
+                                        <strong>Cena:</strong> Panino (opzione vegana disponibile).
+                                        <span class="badge-tbd">Prezzo TBD</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-time"><span class="badge-tbd">Ora TBD</span></div>
+                                    <div class="timeline-content"><strong>DJ Set:</strong> Alessandro Vascan.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--
+                            TODO img: <img src="" data-src="djset.webp"
+                            loading="manual" width="150" height="150"
+                            alt="Illustrazione DJ set" class="card-media-img">
+                        -->
+                        <div class="card-media-placeholder" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            IMG<br>WebP
+                        </div>
+                    </div>
+                    <!--
+                        FIX #3: era <a href="#"> — ora <button disabled>.
+                        Quando arriva il link del form: rimuovi disabled e btn-disabled,
+                        cambia in <a href="LINK_FORM" class="btn" target="_blank" rel="noopener">
+                    -->
+                    <button class="btn btn-disabled"
+                            disabled
+                            aria-disabled="true"
+                            onclick="event.stopPropagation()">
+                        Prenota cena — link in arrivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <h3>Contatti & Info</h3>
+            <p>
+                <strong>Telefono / WhatsApp:</strong><br>
+                <a href="https://wa.me/393515099889"
+                   style="color: var(--color-red); font-weight: bold;">+39 351 509 9889</a>
+            </p>
+            <a href="https://www.instagram.com/grupposcout_caltagirone1"
+               class="social-link"
+               target="_blank"
+               rel="noopener">
+               📸 @grupposcout_caltagirone1
+            </a>
+            <p class="footer-note">Organizzato dal Clan Lux Viae – AGESCI Caltagirone 1</p>
+        </footer>
+
     </div>
-  `;
-}
 
-function renderStage(app) {
-  const stage = STAGES[state.stageIndex];
-  const canBack = state.history.length > 0;
-
-  // VFX stage — special rendering
-  if (stage.type === 'vfx') {
-    const vfxCost = getVfxCost();
-    const isSciFi = state.choices.genere === 'scifi';
-    const genreName = isSciFi ? 'Sci-Fi Action' : 
-                      state.choices.genere === 'horror' ? 'Horror / Thriller' : 'Drama Indie';
-
-    app.innerHTML = `
-      ${canBack ? `<button class="back-btn" onclick="goBack()">← Indietro</button>` : ''}
-      <div class="stage-label fade-in">${stage.label}</div>
-      <div class="stage-title fade-in stagger-1">${stage.title}</div>
-      <p class="stage-sub fade-in stagger-2">${stage.sub}</p>
-
-      <div class="vfx-notice fade-in stagger-3">
-        <span class="vfx-notice-icon">${isSciFi ? '🚀' : '🎬'}</span>
-        <div class="vfx-notice-title">Post-Produzione Automatica</div>
-        <p class="vfx-notice-text">
-          Hai scelto <strong>${genreName}</strong>. 
-          ${isSciFi 
-            ? 'I costi di VFX e montaggio sono elevati a causa degli effetti speciali complessi, della CGI e delle scenografie virtuali richieste da un blockbuster di fantascienza.' 
-            : 'I costi di VFX e montaggio sono contenuti. Un film di questo genere richiede correzione colore, editing standard e pochi effetti visivi.'}
-        </p>
-        <div class="vfx-notice-cost">${formatEuro(vfxCost)}</div>
-        <button class="vfx-confirm-btn" onclick="confirmVfx()">
-          ${isSciFi ? '💸 Accetta il costo' : '✅ Procedi'} →
-        </button>
-      </div>
-
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:14px 18px;max-width:480px;font-size:0.82rem;opacity:0.6;">
-        💡 <strong>Nota:</strong> Questa spesa è automatica e non può essere evitata. Ogni film richiede montaggio e post-produzione.
-      </div>
-    `;
-    return;
-  }
-
-  let cardsHTML = '';
-
-  if (stage.type === 'cast') {
-    // Cast tier cards
-    cardsHTML = `<div class="cards-grid">`;
-    stage.options.forEach((opt, i) => {
-      const namesHTML = opt.names.map(n => `<div class="cast-name">${n}</div>`).join('');
-      cardsHTML += `
-        <div class="card fade-in stagger-${i+1}" onclick="makeChoice('${opt.id}', ${opt.cost})">
-          <span class="tier-badge ${opt.badge}">${opt.badgeLabel}</span>
-          <div class="cast-names">${namesHTML}</div>
-          <div class="card-cost">${formatEuro(opt.cost)}</div>
+    <!-- MODALE SPONSOR [FIX #8: role=dialog, aria-modal, aria-labelledby, ESC handler] -->
+    <div id="sponsorModal"
+         class="modal-overlay"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="sponsorModalTitle"
+         onclick="closeSponsorModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Chiudi"
+                  onclick="closeSponsorModal()"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){closeSponsorModal();}">&times;</span>
+            <h2 id="sponsorModalTitle">I Nostri Sponsor</h2>
+            <div class="sponsor-grid">
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 1</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 2</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 3</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 4</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 5</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 6</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 7</div>
+                <div class="sponsor-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Sponsor 8</div>
+            </div>
         </div>
-      `;
-    });
-    cardsHTML += `</div>`;
-  } else {
-    // Standard choice cards
-    cardsHTML = `<div class="cards-grid">`;
-    stage.options.forEach((opt, i) => {
-      cardsHTML += `
-        <div class="card fade-in stagger-${i+1}" onclick="makeChoice('${opt.id}', ${opt.cost})">
-          <span class="card-icon">${opt.icon}</span>
-          <div class="card-name">${opt.name}</div>
-          <p class="card-desc">${opt.desc}</p>
-          <div class="card-cost">${formatEuro(opt.cost)}</div>
-        </div>
-      `;
-    });
-    cardsHTML += `</div>`;
-  }
-
-  app.innerHTML = `
-    ${canBack ? `<button class="back-btn" onclick="goBack()">← Indietro</button>` : ''}
-    <div class="stage-label fade-in">${stage.label}</div>
-    <div class="stage-title fade-in stagger-1">${stage.title}</div>
-    <p class="stage-sub fade-in stagger-2">${stage.sub}</p>
-    ${cardsHTML}
-  `;
-}
-
-function renderEnd(app) {
-  const result = getEndResult();
-  const spent = getSpent();
-
-  const outcomes = {
-    cannes: {
-      emoji: '🏆',
-      label: 'Festival di Cannes',
-      subtitle: `Eccellente gestione del budget. Il film è finito, la qualità c'è, e ora il mondo ti aspetta sulla Croisette.`,
-      cls: 'cannes',
-    },
-    flop: {
-      emoji: '📉',
-      label: 'Flop Qualitativo',
-      subtitle: `Tecnicamente il film esiste, ma hai tagliato troppo. Dritto in home video senza passare dal box office.`,
-      cls: 'flop',
-    },
-    bankrupt: {
-      emoji: '💸',
-      label: 'Bancarotta',
-      subtitle: `Hai sforato il budget. La produzione si ferma, il film non viene completato. Game over.`,
-      cls: 'bankrupt',
-    }
-  };
-
-  const o = outcomes[result];
-
-  // Build recap
-  const stageLabels = {
-    genere: 'Genere',
-    regia: 'Regia',
-    cast_f: 'Cast Femminile',
-    cast_m: 'Cast Maschile',
-    location: 'Location',
-    vfx: 'VFX & Montaggio',
-    distribuzione: 'Distribuzione',
-  };
-
-  let recapRows = '';
-  STAGES.forEach(s => {
-    const chosenId = state.choices[s.id];
-    if (!chosenId) return;
-
-    if (s.type === 'vfx') {
-      recapRows += `
-        <div class="recap-row">
-          <span class="recap-label">${stageLabels[s.id]}</span>
-          <span class="recap-value">${formatEuro(chosenId)}</span>
-        </div>
-      `;
-      return;
-    }
-
-    const opt = s.options.find(o => o.id === chosenId);
-    if (!opt) return;
-    const label = opt.name || opt.badgeLabel;
-    recapRows += `
-      <div class="recap-row">
-        <span class="recap-label">${stageLabels[s.id]}</span>
-        <span class="recap-value">${formatEuro(opt.cost)}</span>
-      </div>
-    `;
-  });
-
-  recapRows += `
-    <div class="recap-row total">
-      <span class="recap-label">TOTALE SPESO</span>
-      <span class="recap-value" style="color:var(--yellow)">${formatEuro(spent)}</span>
     </div>
-  `;
 
-  app.innerHTML = `
-    <div class="end-screen">
-      <div style="font-size:3.5rem;margin-bottom:12px;animation:fadeInUp 0.4s both">${o.emoji}</div>
-      <div class="end-outcome ${o.cls} fade-in">${o.label}</div>
-      <p class="end-subtitle fade-in stagger-1">${o.subtitle}</p>
-      <div class="recap-table fade-in stagger-2">${recapRows}</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <button class="restart-btn" onclick="startGame()">↺ Rigioca</button>
-        <button class="restart-btn" onclick="backToIntro()" style="border-color:rgba(255,255,255,0.12);opacity:0.5;">← Home</button>
-      </div>
-      <div style="margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.08);">
-        <p style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0.4;margin-bottom:4px;">Vuoi farlo per davvero?</p>
-        <p style="font-size:0.9rem;opacity:0.6;">Corso Cinema &amp; TV Production · <strong style="color:var(--yellow)">ITS Academy Roberto Rossellini</strong> · itsrossellini.it</p>
-      </div>
-    </div>
-  `;
-}
+    <script>
+        // ============================================================
+        // ACCORDION — FIX #6: scrollHeight reale, niente max-height hardcoded
+        // FIX #8: aggiornamento aria-expanded + supporto tastiera
+        // FIX #7: lazy-load manuale delle immagini al primo open
+        // ============================================================
+        function toggleCard(element) {
+            const isOpen = element.classList.toggle('open');
+            const content = element.querySelector('.card-content');
 
-function backToIntro() {
-  state = {
-    screen: 'intro',
-    stageIndex: 0,
-    budget: BUDGET,
-    choices: {},
-    history: [],
-  };
-  render();
-}
+            element.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-render();
-</script>
+            if (isOpen) {
+                // Lazy-load immagini: imposta src da data-src al primo open
+                content.querySelectorAll('img[data-src]').forEach(img => {
+                    if (!img.src || img.src === window.location.href) {
+                        img.src = img.dataset.src;
+                    }
+                });
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.style.opacity  = '1';
+            } else {
+                content.style.maxHeight = '0';
+                content.style.opacity  = '0';
+            }
+        }
+
+        function handleCardKey(event, element) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleCard(element);
+            }
+        }
+
+        // ============================================================
+        // MODALE SPONSOR
+        // ============================================================
+        function openSponsorModal() {
+            const modal = document.getElementById('sponsorModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // Focus trap base: porta il focus al pulsante chiudi
+            modal.querySelector('.close-modal').focus();
+        }
+
+        function closeSponsorModal() {
+            document.getElementById('sponsorModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ESC chiude il modale
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeSponsorModal();
+        });
+
+        // ============================================================
+        // PARTICLE ENGINE
+        // FIX #4: debounce resize (200ms)
+        // FIX #5: MAX_PARTICLES cap adattivo + FIFO su emit
+        // ============================================================
+        window.addEventListener('load', () => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            const canvas = document.getElementById('particle-canvas');
+            const ctx    = canvas.getContext('2d');
+
+            let coloredParticles  = [];
+            let maxParticles      = 0; // calcolato in resizeCanvas, dipende da schermo
+            let mouse             = { x: -9999, y: -9999 };
+            let isEmitting        = false;
+            let emitX = 0, emitY = 0;
+            let fireworks         = [];
+            let fireworkIdCounter = 0;
+            let lastTapTime       = 0;
+            let resizeTimer       = null; // FIX #4
+
+            const ACCENT_COLORS = ['#FFA7D7', '#3BB789', '#FFE372', '#FE4F60', '#351D45'];
+            const MAX_SPEED     = 1.8;
+
+            // FIX #4 + #5: resize calcolato una sola volta, con debounce
+            function resizeCanvas() {
+                canvas.width  = window.innerWidth;
+                canvas.height = window.innerHeight;
+                // Cap adattivo: più basso su schermi piccoli (mobile)
+                maxParticles = Math.min(500, Math.floor((canvas.width * canvas.height) / 2000));
+            }
+
+            function createParticles() {
+                coloredParticles = [];
+                for (let i = 0; i < maxParticles; i++) {
+                    coloredParticles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * 0.9,
+                        vy: (Math.random() - 0.5) * 0.9,
+                        size: 4 + Math.random() * 4,
+                        color: ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)],
+                        rotation: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+
+            function emitFountainParticle(x, y) {
+                // FIX #5: FIFO — rimuovi la particella più vecchia non legata a un firework
+                if (coloredParticles.length >= maxParticles) {
+                    const idx = coloredParticles.findIndex(
+                        p => p.fireworkId === undefined && !p.fireworkExploding
+                    );
+                    if (idx !== -1) coloredParticles.splice(idx, 1);
+                    else return; // tutte in firework: skip per non interrompere effetti
+                }
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.5 + Math.random() * 2.5;
+                coloredParticles.push({
+                    x: x + (Math.random() - 0.5) * 6,
+                    y: y + (Math.random() - 0.5) * 6,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 3 + Math.random() * 4,
+                    color: ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    life: 1.0
+                });
+            }
+
+            function triggerFirework(x, y) {
+                const usedColors = fireworks.map(f => f.color);
+                const freeColors = ACCENT_COLORS.filter(c => !usedColors.includes(c));
+                const palette    = freeColors.length > 0 ? freeColors : ACCENT_COLORS;
+                const color      = palette[Math.floor(Math.random() * palette.length)];
+                const id         = ++fireworkIdCounter;
+
+                fireworks.push({ id, color, x, y, timer: 90, arrivedCount: 0 });
+                coloredParticles.forEach(p => {
+                    if (p.color === color && p.fireworkId === undefined) {
+                        p.fireworkId      = id;
+                        p.fireworkArrived = false;
+                    }
+                });
+            }
+
+            function triggerFireworkBurst(fw) {
+                coloredParticles.forEach(p => {
+                    if (p.fireworkId === fw.id) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = 4 + Math.random() * 7;
+                        p.vx = Math.cos(angle) * speed;
+                        p.vy = Math.sin(angle) * speed;
+                        p.fireworkArrived    = false;
+                        p.fireworkId         = undefined;
+                        p.fireworkExploding  = 40;
+                    }
+                });
+                fireworks = fireworks.filter(f => f.id !== fw.id);
+            }
+
+            function capSpeed(p) {
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (speed > MAX_SPEED) {
+                    p.vx = (p.vx / speed) * MAX_SPEED;
+                    p.vy = (p.vy / speed) * MAX_SPEED;
+                }
+            }
+
+            function drawDiamond(p, color, alpha) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.beginPath();
+                ctx.moveTo(0, -p.size);
+                ctx.lineTo(p.size, 0);
+                ctx.lineTo(0,  p.size);
+                ctx.lineTo(-p.size, 0);
+                ctx.closePath();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle   = color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                coloredParticles = coloredParticles.filter(
+                    p => p.life === undefined || p.life > 0
+                );
+
+                coloredParticles.forEach(p => {
+                    if (!p.fireworkExploding) {
+                        capSpeed(p);
+                    } else {
+                        p.vx *= 0.96;
+                        p.vy *= 0.96;
+                        if (--p.fireworkExploding < 0) p.fireworkExploding = 0;
+                    }
+
+                    p.x        += p.vx;
+                    p.y        += p.vy;
+                    p.rotation += 0.002;
+                    if (p.life !== undefined) p.life -= 0.02;
+
+                    if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height)  p.vy *= -1;
+
+                    const dx          = p.x - mouse.x;
+                    const dy          = p.y - mouse.y;
+                    const dist        = Math.sqrt(dx * dx + dy * dy);
+                    const repelRadius = 150;
+                    const isConverging = p.fireworkId !== undefined;
+
+                    if (!isConverging && dist < repelRadius) {
+                        const force = (repelRadius - dist) / repelRadius;
+                        const angle = Math.atan2(dy, dx);
+                        p.x += Math.cos(angle) * force * 5;
+                        p.y += Math.sin(angle) * force * 5;
+                    }
+
+                    if (isConverging && !p.fireworkArrived) {
+                        const fw = fireworks.find(f => f.id === p.fireworkId);
+                        if (fw) {
+                            const fdx   = fw.x - p.x;
+                            const fdy   = fw.y - p.y;
+                            const fdist = Math.sqrt(fdx * fdx + fdy * fdy);
+                            if (fdist > 6) {
+                                p.x += (fdx / fdist) * 9;
+                                p.y += (fdy / fdist) * 9;
+                            } else {
+                                p.fireworkArrived = true;
+                                p.vx = p.vy = 0;
+                                fw.arrivedCount++;
+                            }
+                        }
+                    }
+
+                    drawDiamond(
+                        p, p.color,
+                        p.life !== undefined ? Math.max(0, p.life) : 0.7
+                    );
+                });
+
+                if (isEmitting) {
+                    emitFountainParticle(emitX, emitY);
+                    emitFountainParticle(emitX, emitY);
+                }
+
+                fireworks.forEach(fw => {
+                    fw.timer--;
+                    const totalOfColor = coloredParticles.filter(
+                        p => p.fireworkId === fw.id
+                    ).length;
+                    if (fw.arrivedCount >= totalOfColor || fw.timer <= 0) {
+                        fw.shouldBurst = true;
+                    }
+                });
+                fireworks.filter(fw => fw.shouldBurst)
+                         .forEach(fw => triggerFireworkBurst(fw));
+
+                requestAnimationFrame(animate);
+            }
+
+            resizeCanvas();
+            createParticles();
+            animate();
+
+            // FIX #4: debounce resize — evita di ricreare tutte le particelle
+            // su ogni singolo pixel di resize (es. rotazione dispositivo)
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    resizeCanvas();
+                    createParticles();
+                }, 200);
+            });
+
+            // Mouse / desktop
+            window.addEventListener('dblclick',   e => triggerFirework(e.clientX, e.clientY));
+            window.addEventListener('mousedown',  e => { isEmitting = true;  emitX = e.clientX; emitY = e.clientY; });
+            window.addEventListener('mousemove',  e => { mouse.x = e.clientX; mouse.y = e.clientY; if (isEmitting) { emitX = e.clientX; emitY = e.clientY; } });
+            window.addEventListener('mouseup',    () => { isEmitting = false; });
+            window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; isEmitting = false; });
+
+            // Touch / mobile
+            window.addEventListener('touchstart', e => {
+                const touch = e.touches[0];
+                const now   = Date.now();
+                if (now - lastTapTime < 300) triggerFirework(touch.clientX, touch.clientY);
+                lastTapTime  = now;
+                isEmitting   = true;
+                emitX        = touch.clientX;
+                emitY        = touch.clientY;
+                mouse.x      = touch.clientX;
+                mouse.y      = touch.clientY;
+            }, { passive: true });
+
+            window.addEventListener('touchmove', e => {
+                const touch = e.touches[0];
+                emitX = mouse.x = touch.clientX;
+                emitY = mouse.y = touch.clientY;
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                isEmitting = false;
+                mouse.x = mouse.y = -9999;
+            });
+        });
+    </script>
 </body>
 </html>
